@@ -9,4 +9,11 @@
 body {
     font-family: var(--font-vazir);
     background-color: #f9fafb;
+    height: 100%;
 }
+
+body {
+    font-family: 'Vazirmatn', sans-serif;
+    direction: rtl;
+  }
+  

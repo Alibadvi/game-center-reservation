@@ -1,38 +1,92 @@
-'use client';
+"use client";
 
-import {useState} from 'react';
-import { Menu, X } from 'lucide-react';
-import Link from 'next/link';
+import Link from "next/link";
+import { useState } from "react";
+import { Menu, X, ShoppingCart } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
+import { useCartStore } from "@/store/cartStore";
 
 export default function Navbar() {
-    const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-    return (
-        <header className="fixed top-0 right-0 left-0 bg-white shadow-md z-50">
-            <nav className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-                <div className="text-xl font-bold text-gray-800">گیم سنتر</div>
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const username = useAuthStore((s) => s.username);
+  const logout = useAuthStore((s) => s.logout);
 
-                <div className="hidden md:flex space-x-6 rtl:space-x-reverse">
-                    <Link href="#">خانه</Link>
-                    <Link href="#">رزرو</Link>
-                    <Link href="#">درباره ما</Link>
-                </div>
+  const cartItems = useCartStore((s) => s.items);
 
-                <button
-                    className="md:hidden"
-                    onClick={() => setIsOpen(!isOpen)}
-                >
-                    {isOpen ? <X size={24}/> : <Menu size={24}/>}
-                </button>
-            </nav>
+  return (
+    <header className="bg-gray-900 text-gray-200 shadow-md font-vazir">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between rtl">
+        {/* Logo */}
+        <div className="text-yellow-400 text-xl font-bold">گیم‌سنتر</div>
 
-            {isOpen && (
-                <div className="md:hidden bg-white px-4 pb-4 flex flex-col items-start space-y-2 rtl:items-end">
-                    <Link href="#">خانه</Link>
-                    <Link href="#">رزرو</Link>
-                    <Link href="#">درباره ما</Link>
-                </div>
-            )}
-        </header>
-    );
+        {/* Desktop Menu */}
+        <ul className="hidden md:flex items-center gap-6 text-sm">
+          <li><Link href="/" className="hover:text-yellow-400">صفحه اصلی</Link></li>
+          <li><Link href="/reserve" className="hover:text-yellow-400">رزرو</Link></li>
+          <li><Link href="/about" className="hover:text-yellow-400">درباره ما</Link></li>
+          <li><Link href="/contact" className="hover:text-yellow-400">ارتباط با ما</Link></li>
+
+          {/* Auth Links */}
+          {!isLoggedIn ? (
+            <>
+              <li><Link href="/login" className="hover:text-yellow-400">ورود</Link></li>
+              <li><Link href="/register" className="hover:text-yellow-400">ثبت‌نام</Link></li>
+            </>
+          ) : (
+            <>
+              <li className="text-yellow-400 font-bold">سلام، {username}</li>
+              <li>
+                <button onClick={logout} className="text-red-400 hover:text-red-500">خروج</button>
+              </li>
+            </>
+          )}
+
+          {/* Cart Icon */}
+          <li>
+            <Link href="/cart" className="relative hover:text-yellow-400">
+              <ShoppingCart size={20} />
+              {cartItems.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-yellow-400 text-gray-900 text-xs rounded-full px-1">
+                  {cartItems.length}
+                </span>
+              )}
+            </Link>
+          </li>
+        </ul>
+
+        {/* Hamburger Icon */}
+        <div className="md:hidden">
+          <button onClick={() => setIsOpen(!isOpen)} className="text-gray-200 focus:outline-none">
+            {isOpen ? <X size={28} /> : <Menu size={28} />}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="md:hidden bg-gray-800 px-4 py-4 text-right space-y-4">
+          <Link href="/" className="block hover:text-yellow-400">صفحه اصلی</Link>
+          <Link href="/reserve" className="block hover:text-yellow-400">رزرو</Link>
+          <Link href="/about" className="block hover:text-yellow-400">درباره ما</Link>
+          <Link href="/contact" className="block hover:text-yellow-400">ارتباط با ما</Link>
+
+          {!isLoggedIn ? (
+            <>
+              <Link href="/login" className="block hover:text-yellow-400">ورود</Link>
+              <Link href="/register" className="block hover:text-yellow-400">ثبت‌نام</Link>
+            </>
+          ) : (
+            <>
+              <div className="text-yellow-400 font-bold">سلام، {username}</div>
+              <button onClick={logout} className="text-red-400 hover:text-red-500 block">خروج</button>
+            </>
+          )}
+
+          <Link href="/cart" className="block hover:text-yellow-400">سبد خرید</Link>
+        </div>
+      )}
+    </header>
+  );
 }

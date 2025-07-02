@@ -1,18 +1,16 @@
-import type { Config } from 'tailwindcss';
+import type { Config } from 'tailwindcss'
 
 const config: Config = {
-    content: [
-        './src/**/*.{js,ts,jsx,tsx}',
-        './app/**/*.{js,ts,jsx,tsx}',
-    ],
-    theme: {
-        extend: {
-            fontFamily: {
-                vazir: ['var(--font-vazir)', 'sans-serif'],
-            },
-        },
+  content: [
+    './src/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        vazir: ['var(--font-vazir)'],
+      },
     },
-    plugins: [],
-};
-
+  },
+  plugins: [],
+}
 export default config;
