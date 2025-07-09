@@ -41,7 +41,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-nav-blur border-b border-white/10">
-      <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between font-vazir relative">
+      <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between font-vazir relative" dir="ltr">
 
         {/* 🧡 Logo - Left side (always) */}
         <Link
@@ -59,7 +59,7 @@ export default function Navbar() {
           onClick={() => setIsOpen(!isOpen)}
         >
           <motion.div
-            className="w-10 h-10 rounded-full absolute left-4 bg-yellow-400 flex items-center justify-center shadow-lg"
+            className="w-10 h-10 rounded-full absolute top-4 right-4 bg-yellow-400 flex items-center justify-center shadow-lg"
             whileTap={{ scale: 0.9 }}
             layout
           >
@@ -84,7 +84,7 @@ export default function Navbar() {
         </motion.button>
 
         {/* 💻 Desktop Nav */}
-        <ul className="hidden md:flex items-center gap-6 text-sm ltr">
+        <ul className="hidden md:flex items-center gap-6 text-sm" dir="rtl">
           {navLinks.map(({ href, label }) => (
             <li key={href}>
               <Link href={href} className="hover:text-neon-pink transition">
@@ -140,7 +140,7 @@ export default function Navbar() {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute top-full left-0 w-full bg-[#1B263B] px-6 py-6 space-y-4 text-sm rtl"
+              className="absolute top-full right-0 w-full bg-[#1B263B] px-6 py-6 space-y-4 text-sm rtl" dir="rtl"
             >
               {navLinks.map(({ href, label }) => (
                 <Link

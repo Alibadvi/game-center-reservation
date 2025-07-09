@@ -106,11 +106,11 @@ export default function HomePage() {
           style={{ y: yTrees }}
           src="/assets/layers/layer3.png"
           alt="Trees"
-          className="absolute -bottom-40 left-0 w-full h-[100vh] object-cover z-50 pointer-events-none"
+          className="absolute -bottom-40 left-0 w-full h-[120vh] md:h-[87vh] object-cover z-50 pointer-events-none"
           draggable={false}
         />
 
-        <div className="absolute bottom-0 w-full h-48 z-50 bg-gradient-to-t from-[#0f1117] via-[#0f1117]/85 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 w-full h-72 z-50 bg-gradient-to-t from-[#0f1117] via-[#0f1117]/85 to-transparent pointer-events-none" />
 
         <motion.div
           initial={{ y: -200, opacity: 0 }}
