@@ -1,45 +1,37 @@
-# 📦 Dependencies
+# 🚫 Dependencies
 node_modules/
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 
-# ✅ Builds
+# 🚫 Build output
 .next/
 out/
 build/
 
-# 🎯 Testing
+# 🚫 Test coverage
 coverage/
 
-# 🔒 Secrets & Env
+# 🚫 Secrets & Credentials
 .env*
 *.pem
 
-# 💥 Logs & debug
+# 🚫 Logs
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 
-# 🖥️ OS junk
+# 🚫 MacOS system files
 .DS_Store
 
-# ⚙️ TypeScript
+# 🚫 TypeScript build cache
 *.tsbuildinfo
-next-env.d.ts
 
-# 🔥 Vercel
+# 🚫 Vercel config
 .vercel/
 
-# 🧬 Prisma
-/src/generated/prisma
+# 🚫 Prisma client (only if generated to custom path — remove if not used)
+# /src/generated/prisma/
 
-# 📦 Turbo (optional if using Turborepo)
+# 🚫 TurboRepo (remove if not using it)
 .turbo/
 
-# 💀 Cache
-.cache/
+# 🚫 Next.js type file
+next-env.d.ts
