@@ -1,56 +1,66 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useAuthStore } from "@/store/authStore";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { notifyError, notifySuccess } from '../../lib/toast';
+import { useAuthStore } from '@/store/authStore';
 
 export default function RegisterPage() {
+  const [form, setForm] = useState({ name: '', phone: '', password: '' });
   const router = useRouter();
   const register = useAuthStore((state) => state.register);
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
-  const handleRegister = (e: React.FormEvent) => {
+  async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
 
-    const success = register(username, password);
-    if (success) {
-      toast.success("ثبت‌نام با موفقیت انجام شد!");
-      router.push("/login");
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      notifyError(data.error || 'مشکلی پیش آمده.');
     } else {
-      toast.error("این نام کاربری قبلا ثبت شده.");
+      notifySuccess('ثبت‌نام موفقیت‌آمیز بود!');
+      register(data.user.phone, data.user.name, data.user.balance, data.user.role);
+      router.push('/');
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-gray-100 font-vazir">
-      <form
-        onSubmit={handleRegister}
-        className="bg-gray-800 p-8 rounded-lg shadow-md w-full max-w-sm space-y-4"
-      >
-        <h1 className="text-xl font-bold text-yellow-400 mb-4">ثبت‌نام</h1>
-
+    <div className="max-w-md mx-auto mt-24 bg-[#1B263B] p-8 rounded-xl shadow space-y-6 font-vazir text-right rtl">
+      <h2 className="text-2xl font-bold text-neon-blue mb-4 text-center">ثبت‌نام</h2>
+      <form onSubmit={handleRegister} className="space-y-4">
         <input
           type="text"
-          placeholder="نام کاربری"
-          className="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          placeholder="نام کامل"
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          className="w-full p-3 rounded bg-[#0D0F14] text-white border border-gray-700"
+          required
         />
-
+        <input
+          type="text"
+          placeholder="شماره موبایل"
+          value={form.phone}
+          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          className="w-full p-3 rounded bg-[#0D0F14] text-white border border-gray-700"
+          required
+        />
         <input
           type="password"
           placeholder="رمز عبور"
-          className="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          className="w-full p-3 rounded bg-[#0D0F14] text-white border border-gray-700"
+          required
         />
-
         <button
           type="submit"
-          className="w-full bg-yellow-400 text-gray-900 py-2 rounded font-bold hover:bg-yellow-300 transition"
+          className="w-full bg-neon-pink text-gray-900 font-bold py-3 rounded hover:bg-pink-400"
         >
           ثبت‌نام
         </button>

@@ -1,52 +1,57 @@
-import { create } from 'zustand'
+// ✅ src/store/authStore.ts
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface User {
-  id?: string
-  username?: string
-  email: string
+  id?: string;
+  name?: string;
+  phone: string;
+  role?: "CUSTOMER" | "ADMIN";
+  balance?: number;
 }
 
 interface AuthState {
-  user: User | null
-  isLoggedIn: boolean
-  login: (email: string, username?: string, id?: string) => void
-  logout: () => void
-  register: (email: string, username?: string, id?: string) => void
+  user: User | null;
+  isLoggedIn: boolean;
+  hasHydrated: boolean;
+  login: (phone: string, name?: string, id?: string, balance?: number, role?: "CUSTOMER" | "ADMIN") => void;
+  logout: () => void;
+  register: (phone: string, name?: string, id?: string, role?: "CUSTOMER" | "ADMIN") => void;
+  setHasHydrated: (hydrated: boolean) => void;
 }
 
-// Utility to safely load user from localStorage (avoids SSR crash)
-const loadUser = (): User | null => {
-  if (typeof window === 'undefined') return null
-  try {
-    const userStr = localStorage.getItem('user')
-    return userStr ? JSON.parse(userStr) : null
-  } catch {
-    return null
-  }
-}
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      isLoggedIn: false,
+      hasHydrated: false,
 
-export const useAuthStore = create<AuthState>((set) => {
-  const initialUser = loadUser()
+      login: (phone, name = "", id = "", balance = 0, role = "CUSTOMER") => {
+        const user = { phone, name, id, balance, role };
+        set({ user, isLoggedIn: true });
+      },
 
-  return {
-    user: initialUser,
-    isLoggedIn: !!initialUser,
+      register: (phone, name = "", id = "", role = "CUSTOMER") => {
+        const user = { phone, name, id, role };
+        set({ user, isLoggedIn: true });
+      },
 
-    login: (email, username = '', id = '') => {
-      const user = { email, username, id }
-      localStorage.setItem('user', JSON.stringify(user))
-      set({ user, isLoggedIn: true })
-    },
+      logout: () => {
+        set({ user: null, isLoggedIn: false });
+      },
 
-    register: (email, username = '', id = '') => {
-      const user = { email, username, id }
-      localStorage.setItem('user', JSON.stringify(user))
-      set({ user, isLoggedIn: true })
-    },
-
-    logout: () => {
-      localStorage.removeItem('user')
-      set({ user: null, isLoggedIn: false })
-    },
-  }
-})
+      setHasHydrated: (hydrated: boolean) => set({ hasHydrated: hydrated }),
+    }),
+    {
+      name: "auth-storage",
+      partialize: (state) => ({
+        user: state.user,
+        isLoggedIn: state.isLoggedIn,
+      }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
+    }
+  )
+);

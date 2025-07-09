@@ -1,0 +1,71 @@
+generator client {
+  provider     = "prisma-client-js"
+  engineType   = "binary"     // ← add this line
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum DeviceType {
+  PC
+  PS5
+}
+
+enum SessionType {
+  AFTERNOON  // 17:00–22:00
+  NIGHT      // 23:00–04:00
+  HOURLY     // PS5 only
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  phone        String        @unique
+  password     String
+  balance      Int           @default(0)
+  role         Role          @default(CUSTOMER)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  reservations Reservation[]
+  transactions Transaction[]
+}
+
+model Reservation {
+  id           String     @id @default(cuid())
+  user         User       @relation(fields: [userId], references: [id])
+  userId       String
+
+  device       DeviceType
+  sessionType  SessionType
+  date         DateTime
+  chairs       Int
+  price        Int
+  isCancelled  Boolean    @default(false)
+
+  createdAt    DateTime   @default(now())
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  amount    Int      // negative for debt, positive for credit
+  reason    String?
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  name      String
+  price     Int
+  createdAt DateTime @default(now()) 
+}

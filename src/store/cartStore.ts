@@ -1,6 +1,8 @@
+// src/store/cartStore.ts
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-type SessionType = "afternoon" | "night";
+export type SessionType = "afternoon" | "night" | string;
 
 export interface CartItem {
   id: string;
@@ -9,6 +11,7 @@ export interface CartItem {
   type: "PC" | "PS5";
   count: number;
   price: number;
+  time?: string; // only for PS5 hourly mode
 }
 
 interface CartStore {
@@ -18,15 +21,22 @@ interface CartStore {
   clearCart: () => void;
 }
 
-export const useCartStore = create<CartStore>((set) => ({
-  items: [],
-  addToCart: (item) =>
-    set((state) => ({
-      items: [...state.items.filter((i) => i.id !== item.id), item],
-    })),
-  removeFromCart: (id) =>
-    set((state) => ({
-      items: state.items.filter((i) => i.id !== id),
-    })),
-  clearCart: () => set({ items: [] }),
-}));
+export const useCartStore = create<CartStore>()(
+  persist(
+    (set) => ({
+      items: [],
+      addToCart: (item) =>
+        set((state) => ({
+          items: [...state.items.filter((i) => i.id !== item.id), item],
+        })),
+      removeFromCart: (id) =>
+        set((state) => ({
+          items: state.items.filter((i) => i.id !== id),
+        })),
+      clearCart: () => set({ items: [] }),
+    }),
+    {
+      name: "cart-storage", // saved in localStorage
+    }
+  )
+);

@@ -1,77 +1,111 @@
 "use client";
 
-import { useAuthStore } from "@/store/authStore";
-import { getUserReservations } from "@/lib/reservations";
 import { useEffect, useState } from "react";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { useAuthStore } from "@/store/authStore";
+import axios from "axios";
 
 export default function ProfilePage() {
+  const router = useRouter(); // ✅ for client-side redirect
   const user = useAuthStore((state) => state.user);
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
   const [reservations, setReservations] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!isLoggedIn) redirect("/login");
-
-    if (user && typeof user.email === "string") {
-      const data = getUserReservations(user.email);
-      setReservations(data);
+    if (!isLoggedIn || !user) {
+      router.push("/login"); // ✅ fixed redirect
+      return;
     }
-  }, [user]);
 
-  const getDisplayName = () => {
-    if (!user) return "نامشخص";
+    const fetchReservations = async () => {
+      try {
+        const res = await axios.get("/api/reservations", {
+          params: { userId: user.id },
+        });
+        setReservations(res.data);
+      } catch (err) {
+        console.error("Error fetching reservations:", err);
+      }
+    };
 
-    if (typeof user.username === "string") return user.username;
-    if (typeof user.email === "string") return user.email.split("@")[0];
-
-    return "کاربر";
-  };
+    fetchReservations();
+  }, [user, isLoggedIn, router]);
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4 font-vazir rtl text-right">
-      <h1 className="text-2xl font-bold mb-6 text-yellow-400">پروفایل کاربری</h1>
+    <div className="max-w-5xl mx-auto py-12 px-4 font-vazir rtl text-right space-y-16">
+      <h1 className="text-3xl font-extrabold text-neon-blue drop-shadow-md text-center">
+        پروفایل کاربری
+      </h1>
 
-      {/* Profile Info */}
-      <div className="bg-gray-800 p-4 rounded-lg mb-6 space-y-2">
+      {/* 👾 User Info Card */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+        className="relative bg-gradient-to-br from-[#0f1117] to-[#131827] p-6 rounded-2xl border border-neon-pink/50 shadow-[0_0_20px_rgba(255,64,129,0.6)] overflow-hidden"
+      >
+        <div className="absolute top-0 left-0 w-full h-1 bg-neon-pink animate-pulse" />
         <p className="text-gray-300 font-bold">
-          نام کاربری: <span className="text-yellow-400">{getDisplayName()}</span>
+          نام کاربر: <span className="text-neon-pink">{user?.name}</span>
         </p>
         <p className="text-gray-300">
-          ایمیل:{" "}
-          <span className="text-white">
-            {typeof user?.email === "string" ? user.email : "نامشخص"}
-          </span>
+          شماره تماس: <span className="text-white">{user?.phone}</span>
         </p>
-      </div>
+      </motion.div>
 
-      {/* Reservation History */}
-      <h2 className="text-lg font-bold text-yellow-300 mb-2">رزروهای شما:</h2>
-      {reservations.length === 0 ? (
-        <p className="text-gray-400">هیچ رزروی ثبت نشده است.</p>
-      ) : (
-        <div className="space-y-4">
-          {reservations.map((res) => (
-            <div
-              key={res.id}
-              className="bg-gray-700 p-4 rounded-lg border border-gray-600"
+      {/* 🛸 Reservation Steps - Alienish Glowing Cards */}
+      <section className="bg-[#0f1117] py-20 px-4 md:px-10">
+        <h2 className="text-4xl font-extrabold text-center text-neon-blue mb-16 drop-shadow-lg">
+          مراحل رزرو بازی
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-6xl mx-auto">
+          {[
+            {
+              title: "مرحله اول",
+              subtitle: "ثبت‌نام یا ورود",
+              icon: "👤",
+              desc: "ابتدا وارد حساب خود شوید یا یک حساب بسازید.",
+            },
+            {
+              title: "مرحله دوم",
+              subtitle: "انتخاب دستگاه و زمان",
+              icon: "🎮",
+              desc: "PC یا PS5 را انتخاب کرده و زمان رزرو را تعیین کنید.",
+            },
+            {
+              title: "مرحله سوم",
+              subtitle: "تأیید و پرداخت",
+              icon: "💳",
+              desc: "رزرو خود را تأیید کرده و هزینه را پرداخت کنید.",
+            },
+          ].map((step, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: i * 0.25 }}
+              className="relative bg-gradient-to-tr from-[#0e1624] to-[#182132] p-8 rounded-2xl border border-cyan-400/30 shadow-[0_0_25px_rgba(0,255,255,0.25)] hover:shadow-[0_0_45px_rgba(0,255,255,0.45)] hover:scale-105 transition duration-300"
             >
-              <p className="text-white">تاریخ: {res.date}</p>
-              <p className="text-white">سیستم: {res.system}</p>
-              {res.session ? (
-                <p className="text-white">
-                  بازه: {res.session === "afternoon" ? "عصر" : "شب"}
+              <div className="absolute -top-7 left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full bg-neon-pink flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(255,64,129,0.9)] border border-pink-400">
+                {step.icon}
+              </div>
+
+              <div className="mt-10 text-center space-y-3">
+                <h3 className="text-xl text-neon-blue font-extrabold">
+                  {step.title}
+                </h3>
+                <p className="text-white text-lg font-semibold">
+                  {step.subtitle}
                 </p>
-              ) : (
-                <p className="text-white">ساعت: {res.time}</p>
-              )}
-              <p className="text-yellow-400 font-bold">
-                قیمت: {res.price.toLocaleString()} تومان
-              </p>
-            </div>
+                <p className="text-gray-400 text-sm leading-6">{step.desc}</p>
+              </div>
+            </motion.div>
           ))}
         </div>
-      )}
+      </section>
     </div>
   );
 }

@@ -1,89 +1,90 @@
-"use client";
+// src/app/admin/page.tsx
+'use client';
 
+import withAdminAuth from '@/components/withAdminAuth';
 import { useEffect, useState } from "react";
+import { CalendarCheck } from "lucide-react";
 import { toast } from "sonner";
-import { User, CalendarCheck } from "lucide-react";
 
-// These will be replaced with real API calls later
-const mockUsers = [
-  { id: 1, name: "Ali", email: "ali@email.com" },
-  { id: 2, name: "Sara", email: "sara@email.com" },
-];
+interface Reservation {
+  id: string;
+  device: "PC" | "PS5";
+  sessionType: "AFTERNOON" | "NIGHT" | "HOURLY";
+  date: string;
+  chairs: number;
+  price: number;
+  user: {
+    name: string;
+    phone: string;
+  };
+}
 
-const mockReservations = [
-  {
-    id: 1,
-    user: "Ali",
-    type: "PC",
-    session: "afternoon",
-    date: "2025-07-03",
-    count: 3,
-    price: 250000,
-  },
-  {
-    id: 2,
-    user: "Sara",
-    type: "PS5",
-    session: "18:00",
-    date: "2025-07-04",
-    count: 1,
-    price: 60000,
-  },
-];
-
-export default function AdminPage() {
-  const [users, setUsers] = useState([]);
-  const [reservations, setReservations] = useState([]);
+function AdminPage() {
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Placeholder logic for fetching data
-    setUsers(mockUsers);
-    setReservations(mockReservations);
+    const fetchReservations = async () => {
+      try {
+        const res = await fetch("/api/reservations");
+        if (!res.ok) throw new Error("Failed to fetch reservations");
+        const data = await res.json();
+        setReservations(data);
+      } catch (err) {
+        console.error(err);
+        toast.error("خطا در دریافت اطلاعات رزرو");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReservations();
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10 font-vazir text-right rtl">
-      <h1 className="text-3xl font-bold mb-10 text-yellow-400">پنل مدیریت</h1>
+    <div className="max-w-6xl mx-auto px-4 py-12 font-vazir text-right rtl space-y-16">
+      <h1 className="text-4xl font-extrabold text-neon-blue drop-shadow-md">
+        🧑‍💼 پنل مدیریت
+      </h1>
 
-      {/* Users Section */}
-      <section className="mb-10">
-        <h2 className="text-xl text-gray-300 flex items-center gap-2 mb-4">
-          <User size={18} /> کاربران ثبت‌نام‌شده
+      <section className="space-y-6">
+        <h2 className="text-2xl text-white flex items-center gap-2 font-bold">
+          <CalendarCheck size={22} className="text-neon-pink" /> لیست رزروها
         </h2>
-        <div className="bg-gray-800 border border-gray-700 rounded p-4 space-y-3">
-          {users.map((user) => (
-            <div
-              key={user.id}
-              className="flex justify-between items-center border-b border-gray-600 pb-2"
-            >
-              <span className="text-gray-200">{user.name}</span>
-              <span className="text-gray-400 text-sm">{user.email}</span>
-            </div>
-          ))}
-        </div>
-      </section>
 
-      {/* Reservations Section */}
-      <section>
-        <h2 className="text-xl text-gray-300 flex items-center gap-2 mb-4">
-          <CalendarCheck size={18} /> رزروها
-        </h2>
-        <div className="bg-gray-800 border border-gray-700 rounded p-4 space-y-3">
-          {reservations.map((res) => (
-            <div
-              key={res.id}
-              className="border-b border-gray-600 pb-3 space-y-1 text-sm"
-            >
-              <p className="text-gray-200">کاربر: {res.user}</p>
-              <p className="text-gray-400">
-                سیستم: {res.type}, تاریخ: {res.date}, {" "}
-                {res.type === "PC" ? `بازه: ${res.session}` : `ساعت: ${res.session}`}, تعداد:
-                {res.count}, قیمت: {res.price.toLocaleString()} تومان
-              </p>
-            </div>
-          ))}
-        </div>
+        {isLoading ? (
+          <p className="text-gray-400">در حال بارگذاری...</p>
+        ) : reservations.length === 0 ? (
+          <p className="text-gray-400">هیچ رزروی ثبت نشده است.</p>
+        ) : (
+          <div className="space-y-5">
+            {reservations.map((res) => (
+              <div
+                key={res.id}
+                className="bg-[#1B263B] p-5 rounded-lg border-l-4 border-neon-pink shadow"
+              >
+                <p className="text-neon-blue font-semibold text-base mb-1">
+                  👤 کاربر: {res.user.name} ({res.user.phone})
+                </p>
+                <p className="text-gray-300 text-sm leading-6">
+                  📅 تاریخ: {new Date(res.date).toLocaleDateString("fa-IR")} <br />
+                  🎮 سیستم: {res.device === "PC" ? "کامپیوتر" : "پلی‌استیشن ۵"} <br />
+                  🕓 بازه:{" "}
+                  {res.device === "PC"
+                    ? res.sessionType === "AFTERNOON"
+                      ? "عصر (17-22)"
+                      : "شب (23-04)"
+                    : `ساعت ${res.sessionType}`} <br />
+                  🔢 تعداد: {res.chairs} <br />
+                  💰 قیمت: {res.price.toLocaleString()} تومان
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
 }
+
+export default withAdminAuth(AdminPage);

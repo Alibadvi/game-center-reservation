@@ -1,6 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "keen-slider/keen-slider.min.css";
+
 
 :root {
     --font-vazir: Vazirmatn, sans-serif;
@@ -12,8 +14,21 @@ body {
     height: 100%;
 }
 
-body {
-    font-family: 'Vazirmatn', sans-serif;
-    direction: rtl;
+@keyframes slide {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
   }
+  
+  .animate-slide {
+    animation: slide 30s linear infinite;
+  }
+  
+  .pause {
+    animation-play-state: paused !important;
+  }
+  
   

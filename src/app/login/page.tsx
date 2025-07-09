@@ -1,59 +1,64 @@
-// File: src/app/login/page.tsx
-"use client";
+'use client';
 
-import { useState, FormEvent } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useAuthStore } from "@/store/authStore";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { notifyError, notifySuccess } from '../../lib/toast';
+import { useAuthStore } from '@/store/authStore';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const login = useAuthStore((state) => state.login);
+  const [form, setForm] = useState({ phone: '', password: '' });
   const router = useRouter();
+  const login = useAuthStore((state) => state.login);
 
-  const handleSubmit = (e: FormEvent) => {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!username || !password) {
-      toast.error("همه فیلدها را پر کنید.");
-      return;
-    }
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
 
-    // Fake login
-    login({ username });
-    toast.success("با موفقیت وارد شدید!");
-    router.push("/");
-  };
+    const data = await res.json();
+
+    if (!res.ok) {
+      notifyError(data.error || 'ورود ناموفق بود.');
+    } else {
+      notifySuccess('ورود موفق!');
+      login(
+        data.user.phone,
+        data.user.name,
+        data.user.id,
+        data.user.balance,
+        data.user.role
+      );
+      router.push('/');
+    }
+  }
 
   return (
-    <div className="max-w-md mx-auto px-4 py-10 font-vazir text-right rtl">
-      <h1 className="text-2xl font-bold mb-6 text-yellow-400">ورود</h1>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="text-gray-300">نام کاربری</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full mt-1 px-4 py-2 rounded bg-gray-800 text-gray-100 border border-gray-600"
-          />
-        </div>
-
-        <div>
-          <label className="text-gray-300">رمز عبور</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full mt-1 px-4 py-2 rounded bg-gray-800 text-gray-100 border border-gray-600"
-          />
-        </div>
-
+    <div className="max-w-md mx-auto mt-24 bg-[#1B263B] p-8 rounded-xl shadow space-y-6 font-vazir text-right rtl">
+      <h2 className="text-2xl font-bold text-neon-blue mb-4 text-center">ورود</h2>
+      <form onSubmit={handleLogin} className="space-y-4">
+        <input
+          type="text"
+          placeholder="شماره موبایل"
+          value={form.phone}
+          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          className="w-full p-3 rounded bg-[#0D0F14] text-white border border-gray-700"
+          required
+        />
+        <input
+          type="password"
+          placeholder="رمز عبور"
+          value={form.password}
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          className="w-full p-3 rounded bg-[#0D0F14] text-white border border-gray-700"
+          required
+        />
         <button
           type="submit"
-          className="w-full bg-yellow-400 text-gray-900 font-bold py-2 rounded hover:bg-yellow-300 transition"
+          className="w-full bg-neon-blue text-gray-200 font-bold py-3 rounded hover:bg-blue-400"
         >
           ورود
         </button>
